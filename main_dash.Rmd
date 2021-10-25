@@ -1,0 +1,99 @@
+---
+title: "STOCK Analyser"
+output: 
+  flexdashboard::flex_dashboard:
+    orientation: rows
+    theme: flatly
+    bg: green
+    vertical_layout: fill
+    social: ["facebook" , "twitter" , "menu"]
+    runtime: shiny
+---
+
+```{r setup, include=FALSE}
+library(flexdashboard)
+library(plotly)
+library(tidyquant)
+library(shiny)
+library(dplyr)
+```
+
+Sidebar {.sidebar}
+=====================================
+```{r}
+selectInput("x" , "select tiker" , c("ASIANPAINT.BO","AXISBANK.BO","BAJAJ-AUTO.BO","BAJFINANCE.BO","BHARTIARTL.BO","DRREDDY.BO","HCLTECH.BO","HDFC.BO","HDFCBANK.BO","HINDUNILVR.BO","ICICIBANK.BO","INDUSINDBK.BO","INFY.BO","ITC.BO","KOTAKBANK.BO","LT.BO","M&M.BO","MARUTI.BO","NESTLEIND.BO","NTPC.BO","ONGC.BO","POWERGRID.BO","RELIANCE.BO","SBIN.BO","SUNPHARMA.BO","TCS.BO","TECHM.BO","TITAN.BO","ULTRACEMCO.BO"))
+```
+
+
+
+```{r}
+tickers = c("ASIANPAINT.BO","AXISBANK.BO","BAJAJ-AUTO.BO","BAJFINANCE.BO","BHARTIARTL.BO","DRREDDY.BO","HCLTECH.BO","HDFC.BO","HDFCBANK.BO","HINDUNILVR.BO","ICICIBANK.BO","INDUSINDBK.BO","INFY.BO","ITC.BO","KOTAKBANK.BO","LT.BO","M&M.BO","MARUTI.BO","NESTLEIND.BO","NTPC.BO","ONGC.BO","POWERGRID.BO","RELIANCE.BO","SBIN.BO","SUNPHARMA.BO","TCS.BO","TECHM.BO","TITAN.BO","ULTRACEMCO.BO")
+
+from <- today() - years(1)
+sensex <- tq_get(tickers,
+               from = from,
+               get = "stock.prices")
+```
+
+
+CANDLESTICK CHART
+============
+
+### CandleStick
+```{r}
+renderPlotly({
+   charting_df <- sensex%>%filter(symbol == input$x)
+   
+   p1 <- plot_ly(x = charting_df$date , type = "candlestick",
+                 open = charting_df$open ,close = charting_df$close,
+                 high = charting_df$high , low = charting_df$low)%>%
+      layout(title = "candlestick chart" ,plot_bgcolor = "#65b5a2",
+             xaxis = list(title = "Date",gridcolor = 'rgb(255,255,255)'),
+             yaxis = list(title = "Closing Price",gridcolor = 'rgb(255,255,255)'))
+   
+   p1
+})
+
+```
+
+
+
+
+STOCK DETAILS
+==============================
+
+
+Row
+-------------------------------
+
+### Closing Price
+```{r}
+renderPlotly({
+      charting_df <- sensex%>%filter(symbol == input$x)
+      
+p2<-plot_ly(charting_df, type = 'scatter' ,mode = 'lines')%>%
+   add_trace(x = charting_df$date , y = charting_df$close,line = list(color = "#094fe6"))%>%
+   layout(showlegend = F , title = "Closing Price",
+          xaxis = list(rangeslider = list(visible = T),gridcolor = 'rgb(255,255,255)'),plot_bgcolor = "#65b5a2", xaxis = list(title = "Date"),
+          yaxis = list(title = "Closing Price",gridcolor = 'rgb(255,255,255)'))
+
+p2
+})
+```
+
+
+### Opening Price
+```{r}
+renderPlotly({
+      charting_df <- sensex%>%filter(symbol == input$x)
+      
+p2<-plot_ly(charting_df, type = 'scatter' ,mode = 'lines')%>%
+   add_trace(x = charting_df$date , y = charting_df$open,line = list(color = "#094fe6"))%>%
+   layout(showlegend = F , title = "Opening Price",
+          xaxis = list(rangeslider = list(visible = T),gridcolor = 'rgb(255,255,255)'),plot_bgcolor = "#65b5a2", xaxis = list(title = "Date"),
+          yaxis = list(title = "Opening Price",gridcolor = 'rgb(255,255,255)'))
+
+p2
+})
+```
+
